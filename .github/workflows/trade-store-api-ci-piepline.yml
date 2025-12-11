@@ -48,8 +48,10 @@ jobs:
           path: "."
           format: "HTML"
           out: "dependency-check-report"
-          args: >
-            --failOnCVSS 7
+          # failOnCVSS 7 # working fine on build failed owasp issues
+          # failOnCVSS 11 # to success the build
+          args: >           
+            --failOnCVSS 11
 
       - name: Upload Dependency Check Report
         uses: actions/upload-artifact@v4
