@@ -23,7 +23,7 @@ jobs:
 
       - name: Build with Maven
         env:
-          JAVA_HOME: /opt/jdk
+          JAVA_HOME: ${{ env.JAVA_HOME }}
         run: mvn -B clean verify
 
       - name: Debug Java
@@ -40,6 +40,9 @@ jobs:
 
       - name: Run OWASP Dependency Check
         uses: dependency-check/Dependency-Check_Action@main
+        env:
+          # actions/setup-java@v1 changes JAVA_HOME so it needs to be reset to match the depcheck image
+          JAVA_HOME: /opt/jdk
         with:
           project: "TradeStore"
           path: "."
