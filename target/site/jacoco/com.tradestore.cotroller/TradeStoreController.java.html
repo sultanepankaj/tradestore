@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TradeStoreController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">tradestoreapi</a> &gt; <a href="index.source.html" class="el_package">com.tradestore.cotroller</a> &gt; <span class="el_source">TradeStoreController.java</span></div><h1>TradeStoreController.java</h1><pre class="source lang-java linenums">package com.tradestore.cotroller;
+
+import com.tradestore.model.TradeStore;
+import com.tradestore.service.TradeStoreService;
+import com.tradestore.validate.ValidateTradeInputs;
+import jakarta.validation.Valid;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+@RestController
+@RequestMapping(&quot;/api/v1&quot;)
+public class TradeStoreController {
+
+    private final TradeStoreService tradeStoreService;
+    private final ValidateTradeInputs validateTradeInputs;
+
+<span class="fc" id="L20">    public TradeStoreController(TradeStoreService tradeStoreService, ValidateTradeInputs validateTradeInputs) {</span>
+<span class="fc" id="L21">        this.tradeStoreService = tradeStoreService;</span>
+<span class="fc" id="L22">        this.validateTradeInputs = validateTradeInputs;</span>
+<span class="fc" id="L23">    }</span>
+
+    @PostMapping(&quot;/trades&quot;)
+    public ResponseEntity&lt;?&gt; createOrUpdateTrade(@Valid @RequestBody TradeStore tradeStore) {
+<span class="fc" id="L27">        validateTradeInputs.validateTradeRequest(tradeStore);</span>
+<span class="fc" id="L28">        String createOrUpdateTradeResponse = tradeStoreService.createOrUpdateTrade(tradeStore);</span>
+
+<span class="pc bpc" id="L30" title="1 of 3 branches missed.">        return switch (createOrUpdateTradeResponse) {</span>
+<span class="fc" id="L31">            case &quot;SAME_VERSION&quot; -&gt; ResponseEntity.ok().build();</span>
+<span class="fc" id="L32">            case &quot;NEW_VERSION&quot; -&gt; ResponseEntity.status(HttpStatus.CREATED).build();</span>
+<span class="nc" id="L33">            default -&gt; ResponseEntity.badRequest().build();</span>
+        };
+    }
+
+    @GetMapping(&quot;/trades/{tradeId}&quot;)
+    public ResponseEntity&lt;Integer&gt; getTradeByTradeId(@PathVariable String tradeId) {
+<span class="fc" id="L39">        return tradeStoreService.getTradeByTradeId(tradeId)</span>
+<span class="fc" id="L40">                .map(ResponseEntity::ok)</span>
+<span class="fc" id="L41">                .orElse(ResponseEntity.notFound().build());</span>
+
+    }
+
+    @GetMapping(&quot;/trades/{tradeId}/versions/{version}&quot;)
+    public ResponseEntity&lt;Integer&gt; getTradeByTradeIdAndVersion(@PathVariable String tradeId, @PathVariable int version) {
+<span class="fc" id="L47">        return tradeStoreService.getTradeByTradeIdAndVersion(tradeId, version)</span>
+<span class="fc" id="L48">                .map(ResponseEntity::ok)</span>
+<span class="fc" id="L49">                .orElse(ResponseEntity.notFound().build());</span>
+    }
+
+    @GetMapping(&quot;/trades&quot;)
+    public ResponseEntity&lt;Page&lt;TradeStore&gt;&gt; getTrades(
+            @RequestParam String counterPartyId,
+            @RequestParam Boolean expired,
+            Pageable pageable) {
+<span class="fc" id="L57">        return ResponseEntity.ok(tradeStoreService.getTrades(counterPartyId, expired, pageable));</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>
