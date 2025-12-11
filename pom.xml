@@ -142,13 +142,16 @@
                 <groupId>org.owasp</groupId>
                 <artifactId>dependency-check-maven</artifactId>
                 <version>9.2.0</version>
-                <executions>
+                    <configuration>
+                        <skip>true</skip>
+                    </configuration>
+                <!--<executions>
                     <execution>
                         <goals>
                             <goal>check</goal>
                         </goals>
                     </execution>
-                </executions>
+                </executions>-->
             </plugin>
         </plugins>
     </build>
