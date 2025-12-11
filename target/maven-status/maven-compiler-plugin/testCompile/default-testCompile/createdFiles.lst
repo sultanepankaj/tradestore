@@ -1,6 +1,0 @@
-com\tradestore\controller\TradeStoreControllerTest.class
-com\tradestore\contract\BaseContractTest.class
-com\tradestore\repository\TradeStoreRepositoryTest.class
-com\tradestore\service\TradeExpiredSchedulerTest.class
-com\tradestore\contract\TradeStoreContractTest.class
-com\tradestore\service\TradeStoreServiceImplTest.class
