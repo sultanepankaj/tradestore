@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Trade Store API - Swagger UI</title>
+    <link rel="stylesheet" type="text/css"
+          href="https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/5.11.0/swagger-ui.min.css" />
+    <style>
+        body {
+            margin: 0;
+            background: #fafafa;
+        }
+        .topbar-wrapper img {
+            content: url('https://upload.wikimedia.org/wikipedia/commons/a/ab/Swagger-logo.png');
+            width: 120px;
+        }
+    </style>
+</head>
+
+<body>
+<div id="swagger-ui"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/5.11.0/swagger-ui-bundle.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/5.11.0/swagger-ui-standalone-preset.min.js"></script>
+
+<script>
+    window.onload = function () {
+        SwaggerUIBundle({
+            spec: {
+                openapi: "3.0.3",
+                info: {
+                    title: "Trade Store API",
+                    version: "1.0.0",
+                    description: "Manage trades"
+                },
+                servers: [
+                    {
+                        url: "https://localhost:8080/api/v1",
+                        description: "local server"
+                    }
+                ],
+                paths: {
+                    "/trades": {
+                        post: {
+                            summary: "Create or update a trade",
+                            operationId: "createOrUpdateTrade",
+                            requestBody: {
+                                required: true,
+                                content: {
+                                    "application/json": {
+                                        schema: { $ref: "#/components/schemas/TradeStore" }
+                                    }
+                                }
+                            },
+                            responses: {
+                                "200": { description: "Trade updated (same version)" },
+                                "201": { description: "Trade created (new version)" },
+                                "400": {
+                                    description: "Validation failed",
+                                    content: {
+                                        "application/json": {
+                                            schema: { $ref: "#/components/schemas/ValidationErrorResponse" }
+                                        }
+                                    }
+                                },
+                                "409": {
+                                    description: "Lower version submitted",
+                                    content: {
+                                        "application/json": {
+                                            schema: { $ref: "#/components/schemas/VersionError" }
+                                        }
+                                    }
+                                },
+                                "422": {
+                                    description: "Maturity date is in the past",
+                                    content: {
+                                        "application/json": {
+                                            schema: { $ref: "#/components/schemas/UnprocessableEntityError" }
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        get: {
+                            summary: "Get trades by counterPartyId and expired",
+                            operationId: "getTrades",
+                            parameters: [
+                                { name: "counterPartyId", in: "query", required: true, schema: { type: "string" } },
+                                { name: "expired", in: "query", required: true, schema: { type: "boolean" } },
+                                { name: "page", in: "query", schema: { type: "integer", default: 0 } },
+                                { name: "size", in: "query", schema: { type: "integer", default: 20 } },
+                                { name: "sort", in: "query", schema: { type: "string", example: "createdDate,desc" } }
+                            ],
+                            responses: {
+                                "200": {
+                                    description: "Paginated list of trades",
+                                    content: {
+                                        "application/json": {
+                                            schema: { $ref: "#/components/schemas/PageTradeStore" }
+                                        }
+                                    }
+                                },
+                                "400": {
+                                    description: "Validation failed",
+                                    content: {
+                                        "application/json": {
+                                            schema: { $ref: "#/components/schemas/ValidationErrorResponse" }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+
+                    "/trades/{tradeId}": {
+                        get: {
+                            summary: "Get latest version of a trade by tradeId",
+                            operationId: "getTradeByTradeId",
+                            parameters: [
+                                { name: "tradeId", in: "path", required: true, schema: { type: "string" } }
+                            ],
+                            responses: {
+                                "200": {
+                                    description: "Latest version number",
+                                    content: { "application/json": { schema: { type: "integer" } } }
+                                },
+                                "404": { description: "Trade not found" },
+                                "400": {
+                                    description: "Validation failed",
+                                    content: {
+                                        "application/json": {
+                                            schema: { $ref: "#/components/schemas/ValidationErrorResponse" }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+
+                    "/trades/{tradeId}/versions/{version}": {
+                        get: {
+                            summary: "Get specific version of a trade",
+                            operationId: "getTradeByTradeIdAndVersion",
+                            parameters: [
+                                { name: "tradeId", in: "path", required: true, schema: { type: "string" } },
+                                { name: "version", in: "path", required: true, schema: { type: "integer" } }
+                            ],
+                            responses: {
+                                "200": {
+                                    description: "Version found",
+                                    content: { "application/json": { schema: { type: "integer" } } }
+                                },
+                                "404": { description: "Version not found" },
+                                "400": {
+                                    description: "Validation failed",
