@@ -1,1 +1,1 @@
-# tradestore
+https://github.com/sultanepankaj/tradestore
