@@ -1,0 +1,237 @@
+openapi: 3.0.3
+info:
+  title: Trade Store API
+  version: 1.0.0
+  description: Manage trades
+
+servers:
+  - url: /api/v1
+    description: local server
+
+paths:
+
+  /trades:
+    post:
+      summary: Create or update a trade
+      operationId: createOrUpdateTrade
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TradeStore'
+      responses:
+        '200':
+          description: Trade updated (same version)
+        '201':
+          description: Trade created (new version)
+        '400':
+          description: Validation failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorResponse'
+        '409':
+          description: Lower version submitted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VersionError'
+        '422':
+          description: Maturity date is in the past
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnprocessableEntityError'
+
+    get:
+      summary: Get trades by counterPartyId and expired
+      operationId: getTrades
+      parameters:
+        - name: counterPartyId
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: expired
+          in: query
+          required: true
+          schema:
+            type: boolean
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 0
+        - name: size
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 20
+        - name: sort
+          in: query
+          required: false
+          schema:
+            type: string
+            example: "createdDate,desc"
+      responses:
+        '200':
+          description: Paginated list of trades
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PageTradeStore'
+        '400':
+          description: Validation failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorResponse'
+
+  /trades/{tradeId}:
+    get:
+      summary: Get latest version of a trade by tradeId
+      operationId: getTradeByTradeId
+      parameters:
+        - name: tradeId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Latest version number
+          content:
+            application/json:
+              schema:
+                type: integer
+        '404':
+          description: Trade not found
+        '400':
+          description: Validation failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorResponse'
+
+  /trades/{tradeId}/versions/{version}:
+    get:
+      summary: Get specific version of a trade
+      operationId: getTradeByTradeIdAndVersion
+      parameters:
+        - name: tradeId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: version
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Version found
+          content:
+            application/json:
+              schema:
+                type: integer
+        '404':
+          description: Version not found
+        '400':
+          description: Validation failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorResponse'
+
+components:
+
+  schemas:
+
+    TradeStore:
+      type: object
+      required:
+        - tradeId
+        - version
+        - counterPartyId
+        - bookId
+        - maturityDate
+        - expired
+      properties:
+        tradeId:
+          type: string
+        version:
+          type: integer
+        counterPartyId:
+          type: string
+        bookId:
+          type: string
+        maturityDate:
+          type: string
+          format: date
+        createdDate:
+          type: string
+          format: date
+        expired:
+          type: boolean
+
+    TradeStoreEntity:
+      type: object
+      description: Entity to hold data of trades
+
+    PageTradeStore:
+      type: object
+      description: Page wrapper to hold Trades details
+      properties:
+        content:
+          type: array
+          items:
+            $ref: '#/components/schemas/TradeStore'
+        pageable:
+          type: object
+        totalPages:
+          type: integer
+        totalElements:
+          type: integer
+        last:
+          type: boolean
+        size:
+          type: integer
+        number:
+          type: integer
+        sort:
+          type: object
+        numberOfElements:
+          type: integer
+        first:
+          type: boolean
+        empty:
+          type: boolean
+          
+    ValidationErrorResponse:
+      type: object
+      description: Input parameter validation failed @Valid
+      additionalProperties:
+        type: string
+      example:
+        tradeId: "must not be blank or null"
+        maturityDate: "must be a future date"
+
+    UnprocessableEntityError:
+      type: object
+      description: Matirity date should be after current date. Future date
+      properties:
+        errorCode:
+          type: string
+          example: MATURITY_IN_PAST
+
+    VersionError:
+      type: object
+      description: Input version is lower than stored one for a given trade.
+      properties:
+        errorCode:
+          type: string
+          example: LOWER_VERSION
