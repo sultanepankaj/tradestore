@@ -1,4 +1,0 @@
--------------------------------------------------------------------------------
-Test set: com.tradestore.contract.TradeStoreContractTest
--------------------------------------------------------------------------------
-Tests run: 4, Failures: 0, Errors: 0, Skipped: 4, Time elapsed: 11.66 s -- in com.tradestore.contract.TradeStoreContractTest
